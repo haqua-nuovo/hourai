@@ -1,1 +1,378 @@
-<h1>予定</h1>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>h-Gov法令検索 - 大蓬莱統一帝国</title>
+    <style>
+        /* --- 基本設定 --- */
+        :root {
+            --main-bg-color: #f0f2f5;
+            --header-bg-color: #2a3a5d;
+            --header-text-color: #ffffff;
+            --primary-color: #0054a8;
+            --border-color: #ccc;
+            --text-color: #333;
+            --card-bg-color: #ffffff;
+            --footer-bg-color: #333333;
+            --footer-text-color: #f0f2f5;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+            margin: 0;
+            background-color: var(--main-bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* --- ヘッダー --- */
+        .site-header {
+            background-color: var(--header-bg-color);
+            color: var(--header-text-color);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .site-header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .site-header .country-name {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* --- メインコンテンツ --- */
+        main {
+            padding: 20px 0;
+        }
+
+        .card {
+            background-color: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            font-size: 20px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        /* --- 検索フォーム --- */
+        .search-form .form-group {
+            margin-bottom: 15px;
+        }
+
+        .search-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .search-form input[type="text"],
+        .search-form select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        .search-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border: none;
+            border-radius: 3px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .search-button:hover {
+            background-color: #003c7a;
+        }
+
+        /* --- 検索結果 --- */
+        #results-message {
+            color: #666;
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 15px;
+            background-color: #f7f7f7;
+            border-radius: 4px;
+        }
+
+        .law-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .law-item h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            color: var(--primary-color);
+        }
+
+        .law-item-meta {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        
+        .law-item-meta span {
+            margin-right: 15px;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+
+        .toggle-content-btn {
+            background: none;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 4px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 14px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .toggle-content-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .law-item-content {
+            font-family: 'Hiragino Mincho ProN', 'MS Mincho', serif;
+            white-space: pre-wrap;
+            line-height: 1.8;
+            /* --- 折りたたみアニメーション用スタイル --- */
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, padding 0.5s ease-out, margin 0.5s ease-out;
+            padding: 0 15px;
+            margin: 0;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .law-item-content.expanded {
+            /* --- 展開時のスタイル --- */
+            max-height: 1000px; /* 十分な高さを確保 */
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        /* --- フッター --- */
+        .site-footer {
+            background-color: var(--footer-bg-color);
+            color: var(--footer-text-color);
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+        }
+
+        /* --- レスポンシブ対応 --- */
+        @media (min-width: 768px) {
+            .site-header h1 {
+                font-size: 28px;
+            }
+            .search-form {
+                display: flex;
+                align-items: flex-end;
+                gap: 20px;
+            }
+            .search-form .form-group {
+                flex: 1;
+                margin-bottom: 0;
+            }
+            .search-form .button-group {
+                flex-basis: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="site-header">
+        <h1>h-Gov法令検索</h1>
+        <div class="country-name">大蓬莱統一帝国</div>
+    </header>
+
+    <div class="container">
+        <main>
+            <section class="card">
+                <h2>法令検索</h2>
+                <form id="search-form" class="search-form" onsubmit="return false;">
+                    <div class="form-group">
+                        <label for="keyword">キーワード</label>
+                        <input type="text" id="keyword" placeholder="例：憲法、時空間">
+                    </div>
+                    <div class="form-group">
+                        <label for="search-type">検索対象</label>
+                        <select id="search-type">
+                            <option value="all">すべての項目</option>
+                            <option value="name">法令名</option>
+                            <option value="content">本文</option>
+                            <option value="id">法令番号</option>
+                        </select>
+                    </div>
+                    <div class="form-group button-group">
+                        <button type="button" id="search-btn" class="search-button">検索</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="card">
+                <h2>検索結果</h2>
+                <div id="results-message"></div>
+                <div id="results-list"></div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="site-footer">
+        <p>&copy; 大蓬莱統一帝国 中央情報管理局</p>
+    </footer>
+
+    <script>
+        // --- 架空の法令データ ---
+        const laws = [
+            {
+                id: 'HHR01-001',
+                name: '大蓬莱統一帝国サンプル',
+                category: 'サンプル',
+                promulgated: '蓬莱元年4月1日',
+                content: `第一章 サンプル
+サンプル
+
+第二章 サンプル
+サンプル`
+            }
+        ];
+
+        // --- DOM要素の取得 ---
+        const searchBtn = document.getElementById('search-btn');
+        const keywordInput = document.getElementById('keyword');
+        const searchTypeSelect = document.getElementById('search-type');
+        const resultsMessage = document.getElementById('results-message');
+        const resultsList = document.getElementById('results-list');
+
+        // --- 結果を表示する関数 ---
+        function displayResults(results) {
+            resultsList.innerHTML = ''; // 表示エリアをクリア
+
+            results.forEach(law => {
+                const lawItem = document.createElement('div');
+                lawItem.className = 'law-item';
+                
+                lawItem.innerHTML = `
+                    <h3>${law.name}</h3>
+                    <div class="law-item-meta">
+                        <span><strong>法令番号:</strong> ${law.id}</span>
+                        <span><strong>種別:</strong> ${law.category}</span>
+                        <span><strong>公布日:</strong> ${law.promulgated}</span>
+                    </div>
+                    <button class="toggle-content-btn">全文を表示</button>
+                    <div class="law-item-content">${law.content}</div>
+                `;
+                resultsList.appendChild(lawItem);
+            });
+        }
+
+        // --- 検索を実行する関数 ---
+        function performSearch() {
+            const keyword = keywordInput.value.trim().toLowerCase();
+            const searchType = searchTypeSelect.value;
+            
+            if (!keyword) {
+                resultsMessage.textContent = `全${laws.length}件の法令を一覧表示しています。`;
+                displayResults(laws);
+                return;
+            }
+
+            const filteredLaws = laws.filter(law => {
+                const searchTarget = {
+                    id: law.id.toLowerCase(),
+                    name: law.name.toLowerCase(),
+                    content: law.content.toLowerCase()
+                };
+
+                switch (searchType) {
+                    case 'name':
+                        return searchTarget.name.includes(keyword);
+                    case 'content':
+                        return searchTarget.content.includes(keyword);
+                    case 'id':
+                        return searchTarget.id.includes(keyword);
+                    case 'all':
+                    default:
+                        return Object.values(searchTarget).some(value => value.includes(keyword));
+                }
+            });
+
+            if (filteredLaws.length === 0) {
+                resultsMessage.textContent = '該当する法令は見つかりませんでした。';
+                resultsList.innerHTML = ''; 
+            } else {
+                resultsMessage.textContent = `${filteredLaws.length}件の法令が見つかりました。`;
+                displayResults(filteredLaws);
+            }
+        }
+
+        // --- イベントリスナーの設定 ---
+        searchBtn.addEventListener('click', performSearch);
+        keywordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // --- 全文表示/非表示の切り替え機能 ---
+        resultsList.addEventListener('click', (event) => {
+            if (event.target.classList.contains('toggle-content-btn')) {
+                const button = event.target;
+                const content = button.nextElementSibling;
+
+                if (content && content.classList.contains('law-item-content')) {
+                    content.classList.toggle('expanded');
+                    if (content.classList.contains('expanded')) {
+                        button.textContent = '閉じる';
+                    } else {
+                        button.textContent = '全文を表示';
+                    }
+                }
+            }
+        });
+
+        // --- 初期表示の実行 ---
+        document.addEventListener('DOMContentLoaded', () => {
+            resultsMessage.textContent = `全${laws.length}件の法令を一覧表示しています。`;
+            displayResults(laws);
+        });
+
+    </script>
+
+</body>
+</html>
+
